@@ -21,13 +21,17 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    private String uuid;
+
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
     @ManyToOne
+    @JoinColumn(name = "movie_uid", referencedColumnName = "uuid")
     private Movie movie;
 
     @ManyToOne
+    @JoinColumn(name = "room_uid", referencedColumnName ="uuid")
     private Room room;
 
     @Column(name = "reserved_seats")

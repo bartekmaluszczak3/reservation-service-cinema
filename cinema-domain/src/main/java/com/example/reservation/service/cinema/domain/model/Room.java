@@ -17,6 +17,8 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    private String uuid;
+
     private String name;
 
     private int capacity;

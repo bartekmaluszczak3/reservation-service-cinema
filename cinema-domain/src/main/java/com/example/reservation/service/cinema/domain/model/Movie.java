@@ -17,6 +17,8 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    private String uuid;
+
     private String title;
 
     private String type;
