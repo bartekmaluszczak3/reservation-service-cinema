@@ -1,7 +1,6 @@
 package com.example.reservation.service.cinema.service.utils;
 
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -10,7 +9,6 @@ import org.springframework.util.ResourceUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

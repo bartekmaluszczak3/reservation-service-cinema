@@ -1,3 +1,3 @@
-delete from event;
+delete from seance;
 delete from room;
 delete from movie;

@@ -15,8 +15,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "event")
-public class Event {
+@Table(name = "seance")
+public class Seance {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;

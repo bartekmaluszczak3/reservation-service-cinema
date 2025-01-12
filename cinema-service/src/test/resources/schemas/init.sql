@@ -17,7 +17,7 @@ create table movie (
 create sequence movie_seq increment 1 start 1;
 
 
-create table event(
+create table seance(
    id bigint PRIMARY KEY,
    uuid VARCHAR(255) unique not null,
    start_time timestamp without time zone,

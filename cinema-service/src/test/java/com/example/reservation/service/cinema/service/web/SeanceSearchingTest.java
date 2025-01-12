@@ -1,6 +1,6 @@
 package com.example.reservation.service.cinema.service.web;
 
-import com.example.reservation.service.cinema.domain.dto.EventDto;
+import com.example.reservation.service.cinema.domain.dto.SeanceDto;
 import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
 import org.junit.jupiter.api.*;
@@ -18,12 +18,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class EventSearchingTest {
+public class SeanceSearchingTest {
 
     @Autowired
     TestRestTemplate testRestTemplate;
@@ -36,8 +35,8 @@ public class EventSearchingTest {
         container.initRecords();
     }
 
-    @AfterEach
-    void afterEach() throws IOException {
+    @AfterAll
+    void afterAll() throws IOException {
         container.clearRecords();
         container.clearDatabase();
     }
@@ -45,11 +44,11 @@ public class EventSearchingTest {
     @Test
     void shouldReturnAllRecordsWhenNonCriteriaIsSpecified() {
         // when
-        HttpEntity<List<EventDto>> listResponseEntity = sendRequest(null, null, null);
+        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(null, null, null);
 
         // then
         var events = listResponseEntity.getBody();
-        Assertions.assertEquals(1, events.size());
+        Assertions.assertEquals(11, events.size());
     }
 
     @Test
@@ -58,11 +57,11 @@ public class EventSearchingTest {
         String type = "horror";
 
         // when
-        HttpEntity<List<EventDto>> listResponseEntity = sendRequest(null, null, type);
+        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(null, null, type);
 
         // then
         var events = listResponseEntity.getBody();
-        Assertions.assertEquals(2, events.size());
+        Assertions.assertEquals(5, events.size());
     }
 
     @Test
@@ -71,12 +70,12 @@ public class EventSearchingTest {
         LocalDateTime beforeDate = LocalDateTime.parse("2004-12-19T10:23:54");
 
         // when
-        HttpEntity<List<EventDto>> listResponseEntity = sendRequest(null, beforeDate, null);
+        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(null, beforeDate, null);
 
         // then
         var events = listResponseEntity.getBody();
         Assertions.assertEquals(2, events.size());
-        List<String> movieIds = events.stream().map(EventDto::getMovieUid).toList();
+        List<String> movieIds = events.stream().map(SeanceDto::getMovieUid).toList();
         Assertions.assertTrue(movieIds.contains("movie-id-5"));
         Assertions.assertTrue(movieIds.contains("movie-id"));
     }
@@ -87,14 +86,14 @@ public class EventSearchingTest {
         LocalDateTime after = LocalDateTime.now().plusYears(100);
 
         // when
-        HttpEntity<List<EventDto>> listResponseEntity = sendRequest(after, null, null);
+        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(after, null, null);
         // then
 
-        var events = listResponseEntity.getBody();
-        Assertions.assertEquals(2, events.size());
-        List<String> eventsId = events.stream().map(EventDto::getEventUuid).toList();
-        Assertions.assertTrue(eventsId.contains("event-id7"));
-        Assertions.assertTrue(eventsId.contains("event-id8"));
+        var seances = listResponseEntity.getBody();
+        Assertions.assertEquals(2, seances.size());
+        List<String> seanceId = seances.stream().map(SeanceDto::getSeanceUuid).toList();
+        Assertions.assertTrue(seanceId.contains("seance-id7"));
+        Assertions.assertTrue(seanceId.contains("seance-id8"));
     }
 
     @Test
@@ -104,12 +103,12 @@ public class EventSearchingTest {
         LocalDateTime beforeDate = LocalDateTime.parse("2031-01-01T10:20:54");
 
         // when
-        HttpEntity<List<EventDto>> listResponseEntity = sendRequest(afterDate, beforeDate, null);
+        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(afterDate, beforeDate, null);
 
         // then
         var events = listResponseEntity.getBody();
         Assertions.assertEquals(3, events.size());
-        List<String> moveIds = events.stream().map(EventDto::getMovieUid).toList();
+        List<String> moveIds = events.stream().map(SeanceDto::getMovieUid).toList();
         Assertions.assertTrue(moveIds.contains("movie-id-2"));
         Assertions.assertTrue(moveIds.contains("movie-id-6"));
         Assertions.assertTrue(moveIds.contains("movie-id-7"));
@@ -123,18 +122,18 @@ public class EventSearchingTest {
         String type = "thriller";
 
         // when
-        HttpEntity<List<EventDto>> listResponseEntity = sendRequest(afterDate, beforeDate, type);
+        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(afterDate, beforeDate, type);
 
         // then
         var events = listResponseEntity.getBody();
         Assertions.assertEquals(2, events.size());
-        List<String> moveIds = events.stream().map(EventDto::getMovieUid).toList();
+        List<String> moveIds = events.stream().map(SeanceDto::getMovieUid).toList();
         Assertions.assertTrue(moveIds.contains("movie-id-7"));
         Assertions.assertTrue(moveIds.contains("movie-id-6"));
     }
 
-    private ResponseEntity<List<EventDto>> sendRequest(LocalDateTime after, LocalDateTime before, String type){
-        URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:7777/api/v1/event")
+    private ResponseEntity<List<SeanceDto>> sendRequest(LocalDateTime after, LocalDateTime before, String type){
+        URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:7777/api/v1/seance")
                 .queryParam("after", after)
                 .queryParam("before", before)
                 .queryParam("type", type)

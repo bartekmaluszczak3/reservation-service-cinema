@@ -1,6 +1,6 @@
 package com.example.reservation.service.cinema.domain.dto;
 
-import com.example.reservation.service.cinema.domain.model.Event;
+import com.example.reservation.service.cinema.domain.model.Seance;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,8 +9,8 @@ import java.util.Set;
 
 @Builder
 @Getter
-public class EventDto {
-    private String eventUuid;
+public class SeanceDto {
+    private String seanceUuid;
     private LocalDateTime startTime;
     private Set<String> reservedSeat;
     private String movieTitle;
@@ -18,9 +18,9 @@ public class EventDto {
     private String roomName;
     private int roomCapacity;
 
-    public static EventDto fromEntity(Event event){
-        return EventDto.builder()
-                .eventUuid(event.getUuid())
+    public static SeanceDto fromEntity(Seance event){
+        return SeanceDto.builder()
+                .seanceUuid(event.getUuid())
                 .startTime(event.getStartTime())
                 .reservedSeat(event.getReservedSeats())
                 .movieTitle(event.getMovie().getTitle())

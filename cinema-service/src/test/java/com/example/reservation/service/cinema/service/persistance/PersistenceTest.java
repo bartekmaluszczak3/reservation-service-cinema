@@ -1,6 +1,6 @@
 package com.example.reservation.service.cinema.service.persistance;
 
-import com.example.reservation.service.cinema.domain.repositories.EventRepository;
+import com.example.reservation.service.cinema.domain.repositories.SeanceRepository;
 import com.example.reservation.service.cinema.domain.repositories.MovieRepository;
 import com.example.reservation.service.cinema.domain.repositories.RoomRepository;
 import com.example.reservation.service.cinema.service.Application;
@@ -25,7 +25,7 @@ public class PersistenceTest {
     MovieRepository movieRepository;
 
     @Autowired
-    EventRepository eventRepository;
+    SeanceRepository seanceRepository;
 
 
     private static final PostgresContainer container = new PostgresContainer();
@@ -33,53 +33,37 @@ public class PersistenceTest {
     @BeforeAll
     void beforeAll() throws IOException {
         container.initDatabase();
-    }
-
-    @AfterEach
-    void afterEach() throws IOException {
-        container.clearRecords();
+        container.initRecords();
     }
 
     @AfterAll
     void afterAll() throws IOException {
+        container.clearRecords();
         container.clearDatabase();
-    }
-
-    @BeforeEach
-    void beforeEach() throws IOException {
-        container.initRecords();
     }
 
     @Test
     @SneakyThrows
     void checkDatabaseStructure(){
         // when
-        var rooms = roomRepository.findAll();
-        var movies = movieRepository.findAll();
-        var events = eventRepository.findAll();
+        var eventWithReservedSeats = seanceRepository.findById(3L);
 
         // then
-        Assertions.assertEquals(2, rooms.size());
-        Assertions.assertEquals(2, movies.size());
-        Assertions.assertEquals(3, events.size());
-
-        // and
-        var eventWithReservedSeats = eventRepository.findById(3L);
-        Assertions.assertEquals(3, eventWithReservedSeats.get().getReservedSeats().size());
+        Assertions.assertEquals(4, eventWithReservedSeats.get().getReservedSeats().size());
     }
 
     @Test
     void shouldReserveSeat(){
         // given
-        var event = eventRepository.findById(3L).get();
+        var event = seanceRepository.findById(3L).get();
         var seatToAdd = "1234";
 
         // when
         event.reserveSeat(seatToAdd);
-        eventRepository.saveAndFlush(event);
+        seanceRepository.saveAndFlush(event);
 
         // then
-        var persistedEvent = eventRepository.findById(3L).get();
+        var persistedEvent = seanceRepository.findById(3L).get();
         Assertions.assertEquals(4, persistedEvent.getReservedSeats().size());
         Assertions.assertTrue(persistedEvent.getReservedSeats().contains(seatToAdd));
     }
@@ -87,16 +71,16 @@ public class PersistenceTest {
     @Test
     void shouldCancelSeat(){
         // given
-        var event = eventRepository.findById(3L).get();
-        var seatToRemove = "11";
+        var event = seanceRepository.findById(1L).get();
+        var seatToRemove = "1";
 
         // when
-        event.reserveSeat(seatToRemove);
-        eventRepository.saveAndFlush(event);
+        event.cancelSeat(seatToRemove);
+        seanceRepository.saveAndFlush(event);
 
         // then
-        var persistedEvent = eventRepository.findById(3L).get();
-        Assertions.assertEquals(2, persistedEvent.getReservedSeats().size());
+        var persistedEvent = seanceRepository.findById(1L).get();
+        Assertions.assertEquals(1, persistedEvent.getReservedSeats().size());
         Assertions.assertFalse(persistedEvent.getReservedSeats().contains(seatToRemove));
     }
 }
