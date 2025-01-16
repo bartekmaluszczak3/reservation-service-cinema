@@ -29,7 +29,7 @@ create table seance(
         CONSTRAINT fk_room
          FOREIGN KEY("room_uid")
             REFERENCES room("uuid"),
-   reserved_seats text[]
+   reserved_seats text[] DEFAULT '{}'
 );
 
 

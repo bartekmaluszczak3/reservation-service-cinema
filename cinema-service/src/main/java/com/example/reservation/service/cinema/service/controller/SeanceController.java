@@ -1,6 +1,7 @@
 package com.example.reservation.service.cinema.service.controller;
 
 import com.example.reservation.service.cinema.domain.dto.SeanceDto;
+import com.example.reservation.service.cinema.service.exception.SeanceNotFoundException;
 import com.example.reservation.service.cinema.service.service.SeanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,5 +25,11 @@ public class SeanceController {
         log.info("Received search events request");
         log.debug("After = {}, Before = {}, type = {}", after, before, type);
         return seanceService.getSpecifiedSeance(before, after, type);
+    }
+
+    @GetMapping("/reserved/{uid}")
+    public List<String> getReservedSeats(@PathVariable String uid) throws SeanceNotFoundException {
+        log.info("Received get reserved");
+        return seanceService.getReservedSeats(uid);
     }
 }

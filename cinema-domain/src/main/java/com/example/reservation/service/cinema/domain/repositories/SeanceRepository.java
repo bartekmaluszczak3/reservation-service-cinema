@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface SeanceRepository extends JpaRepository<Seance, Long>, JpaSpecificationExecutor<Seance> {
-    Optional<String> findByUuid(String id);
+    Optional<Seance> findByUuid(String id);
 
 }
