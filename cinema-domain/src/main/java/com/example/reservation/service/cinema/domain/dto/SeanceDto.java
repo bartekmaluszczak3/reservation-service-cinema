@@ -1,14 +1,15 @@
 package com.example.reservation.service.cinema.domain.dto;
 
 import com.example.reservation.service.cinema.domain.model.Seance;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Builder
 @Getter
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class SeanceDto {
     private String seanceUuid;
     private LocalDateTime startTime;

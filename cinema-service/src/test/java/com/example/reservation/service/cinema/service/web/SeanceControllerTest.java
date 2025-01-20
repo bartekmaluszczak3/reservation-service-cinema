@@ -3,12 +3,15 @@ package com.example.reservation.service.cinema.service.web;
 import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.exception.SeanceNotFoundException;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -17,6 +20,7 @@ import java.util.List;
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(properties = {"service.crypto.disabled=true"})
 public class SeanceControllerTest {
     @Autowired
     TestRestTemplate testRestTemplate;
@@ -68,9 +72,10 @@ public class SeanceControllerTest {
     }
 
 
+    @SneakyThrows
     private List<String> sendGetReservedSeatRequest(String seanceUid) {
         String url = "/api/v1/seance/reserved/" + seanceUid;
-        ResponseEntity<String[]> entity = testRestTemplate.getForEntity(url, String[].class);
-        return Arrays.stream(entity.getBody()).toList();
+        ResponseEntity<String> entity = testRestTemplate.getForEntity(url, String.class);
+        return Arrays.asList(new ObjectMapper().readValue(entity.getBody(), String[].class));
     }
 }

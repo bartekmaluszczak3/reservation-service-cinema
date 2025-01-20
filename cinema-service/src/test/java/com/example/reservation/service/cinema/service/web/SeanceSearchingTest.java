@@ -3,25 +3,31 @@ package com.example.reservation.service.cinema.service.web;
 import com.example.reservation.service.cinema.domain.dto.SeanceDto;
 import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(properties = {"service.crypto.disabled=true"})
 public class SeanceSearchingTest {
 
     @Autowired
@@ -44,11 +50,11 @@ public class SeanceSearchingTest {
     @Test
     void shouldReturnAllRecordsWhenNonCriteriaIsSpecified() {
         // when
-        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(null, null, null);
+        HttpEntity<String> listResponseEntity = sendRequest(null, null, null);
 
         // then
-        var events = listResponseEntity.getBody();
-        Assertions.assertEquals(11, events.size());
+        var seances = responseToList(listResponseEntity.getBody());
+        Assertions.assertEquals(11, seances.size());
     }
 
     @Test
@@ -57,11 +63,11 @@ public class SeanceSearchingTest {
         String type = "horror";
 
         // when
-        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(null, null, type);
+        HttpEntity<String> listResponseEntity = sendRequest(null, null, type);
 
         // then
-        var events = listResponseEntity.getBody();
-        Assertions.assertEquals(5, events.size());
+        var seances = responseToList(listResponseEntity.getBody());
+        Assertions.assertEquals(5, seances.size());
     }
 
     @Test
@@ -70,12 +76,12 @@ public class SeanceSearchingTest {
         LocalDateTime beforeDate = LocalDateTime.parse("2004-12-19T10:23:54");
 
         // when
-        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(null, beforeDate, null);
+        HttpEntity<String> listResponseEntity = sendRequest(null, beforeDate, null);
 
         // then
-        var events = listResponseEntity.getBody();
-        Assertions.assertEquals(2, events.size());
-        List<String> movieIds = events.stream().map(SeanceDto::getMovieUid).toList();
+        var seances = responseToList(listResponseEntity.getBody());
+        Assertions.assertEquals(2, seances.size());
+        List<String> movieIds = seances.stream().map(SeanceDto::getMovieUid).toList();
         Assertions.assertTrue(movieIds.contains("movie-id-5"));
         Assertions.assertTrue(movieIds.contains("movie-id"));
     }
@@ -86,10 +92,10 @@ public class SeanceSearchingTest {
         LocalDateTime after = LocalDateTime.now().plusYears(100);
 
         // when
-        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(after, null, null);
+        HttpEntity<String> listResponseEntity = sendRequest(after, null, null);
         // then
 
-        var seances = listResponseEntity.getBody();
+        var seances = responseToList(listResponseEntity.getBody());
         Assertions.assertEquals(2, seances.size());
         List<String> seanceId = seances.stream().map(SeanceDto::getSeanceUuid).toList();
         Assertions.assertTrue(seanceId.contains("seance-id7"));
@@ -103,12 +109,12 @@ public class SeanceSearchingTest {
         LocalDateTime beforeDate = LocalDateTime.parse("2031-01-01T10:20:54");
 
         // when
-        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(afterDate, beforeDate, null);
+        HttpEntity<String> listResponseEntity = sendRequest(afterDate, beforeDate, null);
 
         // then
-        var events = listResponseEntity.getBody();
-        Assertions.assertEquals(3, events.size());
-        List<String> moveIds = events.stream().map(SeanceDto::getMovieUid).toList();
+        var seances = responseToList(listResponseEntity.getBody());
+        Assertions.assertEquals(3, seances.size());
+        List<String> moveIds = seances.stream().map(SeanceDto::getMovieUid).toList();
         Assertions.assertTrue(moveIds.contains("movie-id-2"));
         Assertions.assertTrue(moveIds.contains("movie-id-6"));
         Assertions.assertTrue(moveIds.contains("movie-id-7"));
@@ -122,17 +128,17 @@ public class SeanceSearchingTest {
         String type = "thriller";
 
         // when
-        HttpEntity<List<SeanceDto>> listResponseEntity = sendRequest(afterDate, beforeDate, type);
+        ResponseEntity<String> listResponseEntity = sendRequest(afterDate, beforeDate, type);
 
         // then
-        var events = listResponseEntity.getBody();
-        Assertions.assertEquals(2, events.size());
-        List<String> moveIds = events.stream().map(SeanceDto::getMovieUid).toList();
+        var seances = responseToList(listResponseEntity.getBody());
+        Assertions.assertEquals(2, seances.size());
+        List<String> moveIds = seances.stream().map(SeanceDto::getMovieUid).toList();
         Assertions.assertTrue(moveIds.contains("movie-id-7"));
         Assertions.assertTrue(moveIds.contains("movie-id-6"));
     }
 
-    private ResponseEntity<List<SeanceDto>> sendRequest(LocalDateTime after, LocalDateTime before, String type){
+    private ResponseEntity<String> sendRequest(LocalDateTime after, LocalDateTime before, String type){
         URI uri = UriComponentsBuilder.fromHttpUrl("http://localhost:7777/api/v1/seance")
                 .queryParam("after", after)
                 .queryParam("before", before)
@@ -142,8 +148,16 @@ public class SeanceSearchingTest {
                 uri,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<>() {}
+               String.class
         );
     }
 
+    @SneakyThrows
+    private List<SeanceDto> responseToList(String response){
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        System.out.println(response);
+        return Arrays.asList(mapper.readValue(response, SeanceDto[].class));
+    }
 }
