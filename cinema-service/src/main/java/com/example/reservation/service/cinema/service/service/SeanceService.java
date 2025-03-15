@@ -6,10 +6,12 @@ import com.example.reservation.service.cinema.domain.repositories.SeanceReposito
 import com.example.reservation.service.cinema.domain.repositories.SeanceSpecification;
 import com.example.reservation.service.cinema.service.crypto.encrypter.Encrypter;
 import com.example.reservation.service.cinema.service.exception.EncryptFailed;
+import com.example.reservation.service.cinema.service.exception.ReserveSeatsFailedException;
 import com.example.reservation.service.cinema.service.exception.SeanceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SeanceService {
 
     private final SeanceRepository seanceRepository;
@@ -53,6 +56,20 @@ public class SeanceService {
         return encryptSeats(reservedSeats);
     }
 
+    public void reserveSeat(String seanceUid, List<String> reservedSeat) throws SeanceNotFoundException, ReserveSeatsFailedException {
+        var optionalSeance = seanceRepository.findByUuid(seanceUid);
+        Seance seance = optionalSeance.orElseThrow(() ->
+                new SeanceNotFoundException(String.format("Seance with uid %s not found", seanceUid)));
+        boolean resultOfReserved = addSeatsToSeance(seance, reservedSeat);
+        if(resultOfReserved){
+            log.info("Seats successfully reserved!");
+            seanceRepository.save(seance);
+        }else {
+            log.info("Error. Cannot reserve seats");
+            throw new ReserveSeatsFailedException("These seats are currently taken");
+        }
+    }
+
     private String encryptSeance(List<SeanceDto> data) throws EncryptFailed {
         try {
             String str = mapper.writeValueAsString(data);
@@ -69,6 +86,15 @@ public class SeanceService {
         } catch (Exception e) {
             throw new EncryptFailed("Cannot encrypt seats");
         }
+    }
+
+    private boolean addSeatsToSeance(Seance seance, List<String> reservedSeat){
+        for(String seat: reservedSeat){
+            if(! seance.reserveSeat(seat)){
+                return false;
+            }
+        }
+        return true;
     }
 }
 
