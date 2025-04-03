@@ -58,6 +58,10 @@ public class PostgresContainer implements ApplicationContextInitializer<Configur
         return new JdbcTemplate(dataSource).queryForList(sql);
     }
 
+    public void execute(String sql){
+        new JdbcTemplate(dataSource).execute(sql);
+    }
+
     private void executeRawSql(String sql){
         new JdbcTemplate(dataSource).execute(sql);
     }

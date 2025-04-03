@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,12 +26,15 @@ public class SeanceService {
 
     private final SeanceRepository seanceRepository;
 
+    private final ReservationService reservationService;
+
     private final Encrypter encrypter;
 
     private final ObjectMapper mapper;
 
-    public SeanceService(SeanceRepository seanceRepository, Encrypter encrypter){
+    public SeanceService(SeanceRepository seanceRepository, ReservationService reservationService, Encrypter encrypter){
         this.seanceRepository = seanceRepository;
+        this.reservationService = reservationService;
         this.encrypter = encrypter;
         this.mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -56,17 +60,16 @@ public class SeanceService {
         return encryptSeats(reservedSeats);
     }
 
-    public void reserveSeat(String seanceUid, List<String> reservedSeat) throws SeanceNotFoundException, ReserveSeatsFailedException {
+    public void reserveSeat(String seanceUid, String userUid, List<String> reservedSeats) throws SeanceNotFoundException, ReserveSeatsFailedException {
         var optionalSeance = seanceRepository.findByUuid(seanceUid);
         Seance seance = optionalSeance.orElseThrow(() ->
                 new SeanceNotFoundException(String.format("Seance with uid %s not found", seanceUid)));
-        boolean resultOfReserved = addSeatsToSeance(seance, reservedSeat);
-        if(resultOfReserved){
-            log.info("Seats successfully reserved!");
-            seanceRepository.save(seance);
+        Set<String> currentTakenSeats = seance.getReservedSeats();
+        boolean seatCanBeTaken = currentTakenSeats.stream().anyMatch(reservedSeats::contains);
+        if(! seatCanBeTaken){
+            reservationService.createReservation(new ReservationService.CreateReservationParams(userUid, reservedSeats, seance));
         }else {
-            log.info("Error. Cannot reserve seats");
-            throw new ReserveSeatsFailedException("These seats are currently taken");
+            throw new ReserveSeatsFailedException("This seat is currently taken");
         }
     }
 
@@ -86,15 +89,6 @@ public class SeanceService {
         } catch (Exception e) {
             throw new EncryptFailed("Cannot encrypt seats");
         }
-    }
-
-    private boolean addSeatsToSeance(Seance seance, List<String> reservedSeat){
-        for(String seat: reservedSeat){
-            if(! seance.reserveSeat(seat)){
-                return false;
-            }
-        }
-        return true;
     }
 }
 

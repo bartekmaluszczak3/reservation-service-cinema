@@ -1,8 +1,8 @@
 package com.example.reservation.service.cinema.service.persistance;
 
+import com.example.reservation.service.cinema.domain.model.Reservation;
+import com.example.reservation.service.cinema.domain.repositories.ReservationRepository;
 import com.example.reservation.service.cinema.domain.repositories.SeanceRepository;
-import com.example.reservation.service.cinema.domain.repositories.MovieRepository;
-import com.example.reservation.service.cinema.domain.repositories.RoomRepository;
 import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
 import lombok.SneakyThrows;
@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class)
 @ContextConfiguration(initializers = PostgresContainer.class)
@@ -19,10 +21,7 @@ import java.io.IOException;
 public class PersistenceTest {
 
     @Autowired
-    RoomRepository roomRepository;
-
-    @Autowired
-    MovieRepository movieRepository;
+    ReservationRepository reservationRepository;
 
     @Autowired
     SeanceRepository seanceRepository;
@@ -55,32 +54,19 @@ public class PersistenceTest {
     @Test
     void shouldReserveSeat(){
         // given
-        var event = seanceRepository.findById(3L).get();
-        var seatToAdd = "1234";
-
+        var seance = seanceRepository.findById(2L).get();
+        var reservation = Reservation.builder()
+                .reservationDate(LocalDateTime.now())
+                .id(1L)
+                .seance(seance)
+                .userUuid("userUid")
+                .uuid("UUUID")
+                .reservedSeats(List.of("1", "2"))
+                .build();
+        reservationRepository.save(reservation);
         // when
-        event.reserveSeat(seatToAdd);
-        seanceRepository.saveAndFlush(event);
 
-        // then
-        var persistedEvent = seanceRepository.findById(3L).get();
-        Assertions.assertEquals(4, persistedEvent.getReservedSeats().size());
-        Assertions.assertTrue(persistedEvent.getReservedSeats().contains(seatToAdd));
-    }
-
-    @Test
-    void shouldCancelSeat(){
-        // given
-        var event = seanceRepository.findById(1L).get();
-        var seatToRemove = "1";
-
-        // when
-        event.cancelSeat(seatToRemove);
-        seanceRepository.saveAndFlush(event);
-
-        // then
-        var persistedEvent = seanceRepository.findById(1L).get();
-        Assertions.assertEquals(1, persistedEvent.getReservedSeats().size());
-        Assertions.assertFalse(persistedEvent.getReservedSeats().contains(seatToRemove));
+        var reservedSeat = seance.getReservationList();
+        Assertions.assertEquals(1, reservedSeat.size());
     }
 }

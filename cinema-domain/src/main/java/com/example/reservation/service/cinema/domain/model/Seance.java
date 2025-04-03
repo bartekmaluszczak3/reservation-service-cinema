@@ -1,16 +1,15 @@
 package com.example.reservation.service.cinema.domain.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-@Data
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,15 +33,16 @@ public class Seance {
     @JoinColumn(name = "room_uid", referencedColumnName ="uuid")
     private Room room;
 
-    @Column(name = "reserved_seats")
-    private Set<String> reservedSeats = new HashSet<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "seance", cascade = CascadeType.ALL)
+    private List<Reservation> reservationList = new ArrayList<>();
 
-    public boolean reserveSeat(String seatNumber){
-        return this.reservedSeats.add(seatNumber);
+    public Set<String> getReservedSeats(){
+        Set<String> reservedSeat = new HashSet<>();
+        reservationList.forEach(e-> reservedSeat.addAll(e.getReservedSeats()));
+        return reservedSeat;
     }
 
-    public boolean cancelSeat(String seatNumber){
-        return this.reservedSeats.remove(seatNumber);
+    public boolean reserveSeat(String seat) {
+        return true;
     }
-
 }

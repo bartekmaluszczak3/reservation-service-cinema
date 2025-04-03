@@ -34,7 +34,7 @@ public class ConsumerService {
         log.debug("Event {}", jsonEvent);
         ReserveSeatData reserveSeatData = EventParser.parseEvent(jsonEvent);
         try {
-            seanceService.reserveSeat(reserveSeatData.getSeanceUid(), reserveSeatData.getReservedSeat());
+            seanceService.reserveSeat(reserveSeatData.getSeanceUid(), reserveSeatData.getUserUid(), reserveSeatData.getReservedSeat());
         } catch (SeanceNotFoundException | ReserveSeatsFailedException e) {
             producerService.sendReserveFailedEvent(
                     ReserveSeatFailedData.builder()

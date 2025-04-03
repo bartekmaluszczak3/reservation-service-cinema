@@ -21,6 +21,7 @@ public class EventParser {
 
         return ReserveSeatData.builder()
                 .reservedSeat(reservedSeats)
+                .userUid(eventDataMap.get("userUid").toString())
                 .seanceUid(eventDataMap.get("seanceUid").toString())
                 .build();
     }

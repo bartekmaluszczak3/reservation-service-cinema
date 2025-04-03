@@ -28,8 +28,20 @@ create table seance(
    room_uid VARCHAR(255),
         CONSTRAINT fk_room
          FOREIGN KEY("room_uid")
-            REFERENCES room("uuid"),
-   reserved_seats text[] DEFAULT '{}'
+            REFERENCES room("uuid")
 );
 
+create table reservation(
+   id bigint PRIMARY KEY,
+   uuid VARCHAR(255) unique not null,
+   user_uid VARCHAR(255) not null,
+   reservation_date timestamp without time zone,
+   reserved_seats text[] DEFAULT '{}',
+   seance_uid VARCHAR(255),
+        CONSTRAINT fk_seance
+         FOREIGN KEY("seance_uid")
+            REFERENCES seance("uuid")
+);
+
+create sequence reservation_seq increment 1 start 1;
 

@@ -1,7 +1,6 @@
 package com.example.reservation.service.cinema.service.web;
 
 import com.example.reservation.service.cinema.service.Application;
-import com.example.reservation.service.cinema.service.exception.SeanceNotFoundException;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.*;

@@ -5,14 +5,20 @@ insert into room(id, uuid, name, capacity) values (2, 'room-id-2', 'room-two', 3
 insert into movie(id, uuid, title, type) values (1, 'movie-id', 'gladiator', 'action');
 insert into movie(id, uuid, title, type) values (2, 'movie-id-2', 'seven', 'horror');
 
-insert into seance(id, uuid, start_time, movie_uid, room_uid, reserved_seats )
-    values (1, 'seance-id1', now(), 'movie-id', 'room-id-1', array['1', '12']);
+insert into seance(id, uuid, start_time, movie_uid, room_uid )
+    values (1, 'seance-id1', now(), 'movie-id', 'room-id-1');
 
-insert into seance(id, uuid, start_time, movie_uid, room_uid, reserved_seats)
-    values (2, 'seance-id2', now(), 'movie-id', 'room-id-1', array['1', '3', '15', '16', '17']);
+insert into seance(id, uuid, start_time, movie_uid, room_uid)
+    values (2, 'seance-id2', now(), 'movie-id', 'room-id-1');
 
-insert into seance(id, uuid, start_time, movie_uid, room_uid, reserved_seats )
-    values (3, 'seance-id3', now(), 'movie-id-2', 'room-id-2', array['121', '11', '12']);
+insert into seance(id, uuid, start_time, movie_uid, room_uid)
+    values (3, 'seance-id3', now(), 'movie-id-2', 'room-id-2');
+
+insert into reservation(id, uuid, user_uid, reservation_date, seance_uid, reserved_seats)
+    values(91, 'reservation-id-1', 'user-id', now(), 'seance-id3', array['1', '2']);
+
+insert into reservation(id, uuid, user_uid, reservation_date, seance_uid, reserved_seats)
+    values(92, 'reservation-id-2', 'user-id', now(), 'seance-id3', array['3', '4']);
 
 -- searching test
 insert into movie(id, uuid, title, type) values (4, 'movie-id-4', 'jaws', 'horror');

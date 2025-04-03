@@ -1,7 +1,6 @@
 package com.example.reservation.service.cinema.service.crypto.encrypter;
 
 
-import com.example.reservation.service.cinema.service.exception.EncryptFailed;
 import lombok.AllArgsConstructor;
 
 import javax.crypto.BadPaddingException;
