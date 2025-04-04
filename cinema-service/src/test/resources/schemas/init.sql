@@ -37,6 +37,7 @@ create table reservation(
    user_uid VARCHAR(255) not null,
    reservation_date timestamp without time zone,
    reserved_seats text[] DEFAULT '{}',
+   status VARCHAR(255) not null,
    seance_uid VARCHAR(255),
         CONSTRAINT fk_seance
          FOREIGN KEY("seance_uid")

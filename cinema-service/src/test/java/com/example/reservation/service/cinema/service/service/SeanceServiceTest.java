@@ -1,5 +1,6 @@
 package com.example.reservation.service.cinema.service.service;
 
+import com.example.reservation.service.cinema.domain.model.ReservationStatus;
 import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.exception.EncryptFailed;
 import com.example.reservation.service.cinema.service.exception.ReserveSeatsFailedException;
@@ -55,11 +56,13 @@ public class SeanceServiceTest {
         // when
         seanceService.reserveSeat(seanceUid, userUid, seats);
 
+        // then
         var reservation = getReservationForUser(userUid);
         Assertions.assertEquals(1, reservation.size());
         var persistentSeanceUid = reservation.get(0).get("seance_uid").toString();
         Assertions.assertEquals(seanceUid, persistentSeanceUid);
-
+        ReservationStatus status = ReservationStatus.valueOf(reservation.get(0).get("status").toString());
+        Assertions.assertEquals(ReservationStatus.ACTIVE, status);
         String reservedSeat = reservation.get(0).get("reserved_seats").toString();
         seats.forEach(e-> Assertions.assertTrue(reservedSeat.contains(e)));
     }

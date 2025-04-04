@@ -1,6 +1,7 @@
 package com.example.reservation.service.cinema.service.service;
 
 import com.example.reservation.service.cinema.domain.model.Reservation;
+import com.example.reservation.service.cinema.domain.model.ReservationStatus;
 import com.example.reservation.service.cinema.domain.model.Seance;
 import com.example.reservation.service.cinema.domain.repositories.ReservationRepository;
 import com.example.reservation.service.cinema.service.crypto.encrypter.Encrypter;
@@ -37,8 +38,10 @@ public class ReservationService {
                 .reservationDate(LocalDateTime.now())
                 .seance(params.seanceUid)
                 .uuid(UUID.randomUUID().toString())
+                .reservationStatus(ReservationStatus.ACTIVE)
                 .build();
         reservationRepository.save(reservation);
+
     }
 
     public record CreateReservationParams(String userUid, List<String> reservedSeats, Seance seanceUid) {

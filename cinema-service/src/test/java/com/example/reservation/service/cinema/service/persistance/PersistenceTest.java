@@ -1,6 +1,7 @@
 package com.example.reservation.service.cinema.service.persistance;
 
 import com.example.reservation.service.cinema.domain.model.Reservation;
+import com.example.reservation.service.cinema.domain.model.ReservationStatus;
 import com.example.reservation.service.cinema.domain.repositories.ReservationRepository;
 import com.example.reservation.service.cinema.domain.repositories.SeanceRepository;
 import com.example.reservation.service.cinema.service.Application;
@@ -62,11 +63,13 @@ public class PersistenceTest {
                 .userUuid("userUid")
                 .uuid("UUUID")
                 .reservedSeats(List.of("1", "2"))
+                .reservationStatus(ReservationStatus.ACTIVE)
                 .build();
         reservationRepository.save(reservation);
         // when
 
         var reservedSeat = seance.getReservationList();
         Assertions.assertEquals(1, reservedSeat.size());
+        
     }
 }

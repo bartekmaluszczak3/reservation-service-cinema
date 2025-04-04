@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Builder
@@ -34,6 +32,10 @@ public class Reservation {
     @ManyToOne
     @JoinColumn(name = "seance_uid", referencedColumnName ="uuid")
     private Seance seance;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus reservationStatus;
 
     @Column(name = "reserved_seats")
     private List<String> reservedSeats = new ArrayList<>();
