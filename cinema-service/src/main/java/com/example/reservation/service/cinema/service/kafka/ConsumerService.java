@@ -1,11 +1,13 @@
 package com.example.reservation.service.cinema.service.kafka;
 
+import com.example.reservation.service.cinema.domain.model.ReservationStatus;
 import com.example.reservation.service.cinema.service.exception.ReserveSeatsFailedException;
 import com.example.reservation.service.cinema.service.exception.SeanceNotFoundException;
 import com.example.reservation.service.cinema.service.service.SeanceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.example.events.events.eventdata.ReservationStateChangedData;
 import org.example.events.events.eventdata.ReserveSeatData;
 import org.example.events.events.eventdata.ReserveSeatFailedData;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -28,13 +30,20 @@ public class ConsumerService {
     }
 
     @KafkaListener(topics = SEANCE_RESERVE)
-    public void listen(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
+    public void seanceReserve(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
         log.info("Received SeanceReserveEvent");
         String jsonEvent = consumerRecord.value().toString();
         log.debug("Event {}", jsonEvent);
         ReserveSeatData reserveSeatData = EventParser.parseEvent(jsonEvent);
         try {
-            seanceService.reserveSeat(reserveSeatData.getSeanceUid(), reserveSeatData.getUserUid(), reserveSeatData.getReservedSeat());
+            String reservationUid = seanceService.reserveSeat(reserveSeatData.getSeanceUid(), reserveSeatData.getUserUid(), reserveSeatData.getReservedSeat());
+            producerService.sendReservationStateChangedEvent(
+                    ReservationStateChangedData.builder()
+                            .reservationUid(reservationUid)
+                            .oldStatus(null)
+                            .newStatus(ReservationStatus.ACTIVE.name())
+                            .build()
+            );
         } catch (SeanceNotFoundException | ReserveSeatsFailedException e) {
             producerService.sendReserveFailedEvent(
                     ReserveSeatFailedData.builder()

@@ -60,15 +60,16 @@ public class SeanceService {
         return encryptSeats(reservedSeats);
     }
 
-    public void reserveSeat(String seanceUid, String userUid, List<String> reservedSeats) throws SeanceNotFoundException, ReserveSeatsFailedException {
+    public String reserveSeat(String seanceUid, String userUid, List<String> reservedSeats) throws SeanceNotFoundException, ReserveSeatsFailedException {
         var optionalSeance = seanceRepository.findByUuid(seanceUid);
         Seance seance = optionalSeance.orElseThrow(() ->
                 new SeanceNotFoundException(String.format("Seance with uid %s not found", seanceUid)));
         Set<String> currentTakenSeats = seance.getReservedSeats();
         boolean seatCanBeTaken = currentTakenSeats.stream().anyMatch(reservedSeats::contains);
         if(! seatCanBeTaken){
-            reservationService.createReservation(new ReservationService.CreateReservationParams(userUid, reservedSeats, seance));
+            return reservationService.createReservation(new ReservationService.CreateReservationParams(userUid, reservedSeats, seance));
         }else {
+            log.error("Cannot reserve seat. One of seats is currently taken");
             throw new ReserveSeatsFailedException("This seat is currently taken");
         }
     }

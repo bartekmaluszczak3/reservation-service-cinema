@@ -31,17 +31,18 @@ public class ReservationService {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    public void createReservation(CreateReservationParams params){
+    public String createReservation(CreateReservationParams params){
+        String reservationUid = UUID.randomUUID().toString();
         Reservation reservation = Reservation.builder()
                 .reservedSeats(params.reservedSeats)
                 .userUuid(params.userUid)
                 .reservationDate(LocalDateTime.now())
                 .seance(params.seanceUid)
-                .uuid(UUID.randomUUID().toString())
+                .uuid(reservationUid)
                 .reservationStatus(ReservationStatus.ACTIVE)
                 .build();
         reservationRepository.save(reservation);
-
+        return reservationUid;
     }
 
     public record CreateReservationParams(String userUid, List<String> reservedSeats, Seance seanceUid) {

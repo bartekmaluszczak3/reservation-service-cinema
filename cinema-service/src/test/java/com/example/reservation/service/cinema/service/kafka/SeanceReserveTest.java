@@ -13,8 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.JsonNode;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.shaded.org.awaitility.core.ConditionTimeoutException;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -36,6 +36,9 @@ public class SeanceReserveTest {
     @Autowired
     MockProducer mockProducer;
 
+    @Autowired
+    MockConsumer mockConsumer;
+
     @BeforeAll
     void beforeAll() throws IOException {
         container.initDatabase();
@@ -48,6 +51,11 @@ public class SeanceReserveTest {
         container.clearDatabase();
     }
 
+    @AfterEach
+    void afterEach(){
+        mockConsumer.resetPayload();
+    }
+
     @SneakyThrows
     @Test
     void shouldReserveNotOccupiedSeats(){
@@ -56,6 +64,7 @@ public class SeanceReserveTest {
         List<String> reservedSeat = List.of("112", "113");
         EventData eventData = ReserveSeatData.builder()
                 .seanceUid(seanceUid)
+                .userUid("userUid")
                 .reservedSeat(reservedSeat)
                 .build();
 
@@ -73,17 +82,30 @@ public class SeanceReserveTest {
         // then
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(()-> waitForProcessEvent(reservedSeat, seanceUid));
+                .until(() -> mockConsumer.getPayload() != null);
+
+        String payload = mockConsumer.getPayload();
+        JsonNode reservationData = new ObjectMapper().readTree(payload).get("eventData");
+        Assertions.assertEquals("ACTIVE", (reservationData.get("newStatus").asText()));
+        String reservationUid = reservationData.get("reservationUid").asText();
+
+        // and
+        var persistedReservation = getReservation(reservationUid);
+        Assertions.assertEquals(seanceUid, persistedReservation.get("seance_uid").toString());
+        PgArray pgArray = (PgArray) persistedReservation.get("reserved_seats");
+        List<String> persistedSeats = Arrays.stream((String[]) pgArray.getArray()).toList();
+        Assertions.assertTrue(persistedSeats.containsAll(reservedSeat));
     }
 
     @SneakyThrows
     @Test
     void shouldNotReserveOccupiedSeat() {
         // given
-        String seanceUid = "seance-id1";
+        String seanceUid = "seance-id3";
         List<String> reservedSeat = List.of("das", "13","1");
 
         EventData eventData = ReserveSeatData.builder()
+                .userUid("userUid")
                 .seanceUid(seanceUid)
                 .reservedSeat(reservedSeat)
                 .build();
@@ -99,16 +121,30 @@ public class SeanceReserveTest {
         mockProducer.sendSeanceReserved(eventString);
 
         // then
-        Assertions.assertThrows(ConditionTimeoutException.class, ()->
-                await()
-                .atMost(Duration.ofSeconds(5))
-                .until(()-> waitForProcessEvent(reservedSeat, seanceUid)));
+        var reservedSeatsInSeance = getReservedSeat(seanceUid);
+        Assertions.assertFalse(reservedSeatsInSeance.containsAll(reservedSeat));
+
+        // and
+        String payload = mockConsumer.getPayload();
+        Assertions.assertNull(payload);
     }
 
-    private boolean waitForProcessEvent(List<String> reservedSeats, String seanceUid) throws SQLException {
-        Map<String, Object> maps = container.executeQueryForObjects(String.format("SELECT reserved_seats from seance where uuid='%s';", seanceUid)).get(0);
-        PgArray pgArray = (PgArray) maps.get("reserved_seats");
-        List<String> array = Arrays.stream((String[]) pgArray.getArray()).toList();
-        return array.containsAll(reservedSeats);
+    private Map<String, Object> getReservation(String reservationUid){
+        return container.executeQueryForObjects(String.format("SELECT * from reservation where uuid='%s';", reservationUid)).get(0);
+    }
+
+    private List<String> getReservedSeat(String seanceUid){
+        List<String> allReservedSeatInSeance = new ArrayList<>();
+        List<Map<String, Object>> reservation =
+                container.executeQueryForObjects(String.format("SELECT reserved_seats from reservation  where seance_uid='%s';", seanceUid));
+        reservation.forEach(e->{
+            PgArray pgArray = (PgArray) e.get("reserved_seats");
+            try {
+                allReservedSeatInSeance.addAll(Arrays.stream((String[]) pgArray.getArray()).toList());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        });
+        return allReservedSeatInSeance;
     }
 }

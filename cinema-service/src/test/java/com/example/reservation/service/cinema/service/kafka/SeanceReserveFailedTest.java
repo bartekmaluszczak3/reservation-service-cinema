@@ -100,7 +100,6 @@ public class SeanceReserveFailedTest {
                 .atMost(Duration.ofSeconds(5))
                 .until(() -> mockConsumer.getPayload() != null);
         String payload = mockConsumer.getPayload();
-        System.out.println(mockConsumer.getPayload());
         Assertions.assertTrue(payload.contains("ReserveSeatFailedEvent"));
         Assertions.assertTrue(payload.contains(seanceUid));
         Assertions.assertTrue(payload.contains("These seats are currently taken"));

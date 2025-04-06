@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.events.events.Event;
+import org.example.events.events.eventdata.ReservationStateChangedData;
 import org.example.events.events.eventdata.ReserveSeatFailedData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +16,7 @@ import java.sql.Date;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.example.reservation.service.cinema.service.kafka.TopicsNames.RESERVATION_STATE_CHANGED;
 import static com.example.reservation.service.cinema.service.kafka.TopicsNames.SEANCE_RESERVE_FAILED;
 
 @Service
@@ -34,5 +36,18 @@ public class ProducerService {
         log.info("Sending ReserveSeatFailedEvent");
         String serializedEvent = objectMapper.writeValueAsString(event);
         kafkaTemplate.send(SEANCE_RESERVE_FAILED, serializedEvent);
+    }
+
+    public void sendReservationStateChangedEvent(ReservationStateChangedData reservationStateChangedData) throws JsonProcessingException {
+        Event event = Event.builder()
+                .eventType("ReservationStateChangedDataEvent")
+                .id(UUID.randomUUID().toString())
+                .timestamp(Date.from(Instant.now()))
+                .eventData(reservationStateChangedData)
+                .build();
+        log.info("Sending ReservationStateChangedDataEvent");
+        String serializedEvent = objectMapper.writeValueAsString(event);
+        kafkaTemplate.send(RESERVATION_STATE_CHANGED, serializedEvent);
+
     }
 }
