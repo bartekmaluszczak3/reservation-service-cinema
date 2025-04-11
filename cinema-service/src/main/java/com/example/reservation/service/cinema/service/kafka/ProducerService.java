@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.events.events.Event;
 import org.example.events.events.eventdata.ReservationStateChangedData;
-import org.example.events.events.eventdata.ReserveSeatFailedData;
+import org.example.events.events.eventdata.ReserveStateChangeFailedData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static com.example.reservation.service.cinema.service.kafka.TopicsNames.RESERVATION_STATE_CHANGED;
-import static com.example.reservation.service.cinema.service.kafka.TopicsNames.SEANCE_RESERVE_FAILED;
+import static com.example.reservation.service.cinema.service.kafka.TopicsNames.RESERVATION_STATE_CHANGE_FAILED;
 
 @Service
 @Slf4j
@@ -26,16 +26,16 @@ public class ProducerService {
     KafkaTemplate<String, String> kafkaTemplate;
     ObjectMapper objectMapper = new ObjectMapper().setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
-    public void sendReserveFailedEvent(ReserveSeatFailedData reserveSeatFailedData) throws JsonProcessingException {
+    public void sendReserveStateChangeFailedEvent(ReserveStateChangeFailedData reserveSeatFailedData) throws JsonProcessingException {
         Event event = Event.builder()
-                .eventType("ReserveSeatFailedEvent")
+                .eventType("ReserveStateChangeFailedEvent")
                 .id(UUID.randomUUID().toString())
                 .timestamp(Date.from(Instant.now()))
                 .eventData(reserveSeatFailedData)
                 .build();
         log.info("Sending ReserveSeatFailedEvent");
         String serializedEvent = objectMapper.writeValueAsString(event);
-        kafkaTemplate.send(SEANCE_RESERVE_FAILED, serializedEvent);
+        kafkaTemplate.send(RESERVATION_STATE_CHANGE_FAILED, serializedEvent);
     }
 
     public void sendReservationStateChangedEvent(ReservationStateChangedData reservationStateChangedData) throws JsonProcessingException {

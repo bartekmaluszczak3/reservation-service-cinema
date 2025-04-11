@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.events.events.eventdata.ReservationStateChangedData;
 import org.example.events.events.eventdata.ReserveSeatData;
-import org.example.events.events.eventdata.ReserveSeatFailedData;
+import org.example.events.events.eventdata.ReserveStateChangeFailedData;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -45,10 +45,12 @@ public class ConsumerService {
                             .build()
             );
         } catch (SeanceNotFoundException | ReserveSeatsFailedException e) {
-            producerService.sendReserveFailedEvent(
-                    ReserveSeatFailedData.builder()
+            producerService.sendReserveStateChangeFailedEvent(
+                    ReserveStateChangeFailedData.builder()
                             .reason(e.getMessage())
                             .reservedSeat(reserveSeatData.getReservedSeat())
+                            .oldState(null)
+                            .newState(ReservationStatus.ACTIVE.name())
                             .seanceUid(reserveSeatData.getSeanceUid())
                             .build()
             );
