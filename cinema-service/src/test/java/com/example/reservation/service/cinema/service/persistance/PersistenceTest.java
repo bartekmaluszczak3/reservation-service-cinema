@@ -57,7 +57,8 @@ public class PersistenceTest {
         // given
         var seance = seanceRepository.findById(2L).get();
         var reservation = Reservation.builder()
-                .reservationDate(LocalDateTime.now())
+                .createdTime(LocalDateTime.now())
+                .modifiedTime(LocalDateTime.now())
                 .id(1L)
                 .seance(seance)
                 .userUuid("userUid")

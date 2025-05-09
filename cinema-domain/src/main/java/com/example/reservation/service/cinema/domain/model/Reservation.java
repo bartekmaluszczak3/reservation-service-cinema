@@ -23,8 +23,11 @@ public class Reservation {
 
     private String uuid;
 
-    @Column(name = "reservation_date")
-    private LocalDateTime reservationDate;
+    @Column(name = "created_date")
+    private LocalDateTime createdTime;
+
+    @Column(name = "modified_date")
+    private LocalDateTime modifiedTime;
 
     @Column(name = "user_uid")
     private String userUuid;
