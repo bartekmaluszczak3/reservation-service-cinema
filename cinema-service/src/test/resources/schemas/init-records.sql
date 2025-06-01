@@ -15,7 +15,7 @@ insert into seance(id, uuid, start_time, movie_uid, room_uid)
     values (3, 'seance-id3', now(), 'movie-id-2', 'room-id-2');
 
 insert into reservation(id, uuid, user_uid, created_date, modified_date, seance_uid, reserved_seats, status)
-    values(91, 'reservation-id-1', 'user-id', now(), now(), 'seance-id3', array['1', '2'], 'ACTIVE');
+    values(91, 'reservation-id-1', 'user-id', '2020-10-20 10:23:54', '2020-10-20 10:23:54', 'seance-id3', array['1', '2'], 'ACTIVE');
 
 insert into reservation(id, uuid, user_uid, created_date, modified_date, seance_uid, reserved_seats, status)
     values(92, 'reservation-id-2', 'user-id', now(), now(), 'seance-id3', array['3', '4'], 'ACTIVE');

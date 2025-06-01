@@ -9,6 +9,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import static com.example.reservation.service.cinema.service.kafka.TopicsNames.SEANCE_RESERVE;
+import static com.example.reservation.service.cinema.service.kafka.TopicsNames.CANCEL_RESERVATION;
 
 @Component
 public class MockProducer {
@@ -20,6 +21,11 @@ public class MockProducer {
     public void sendSeanceReserved(String seanceReserve) throws JsonProcessingException {
         String jsonEvent = objectMapper.writeValueAsString(seanceReserve);
         kafkaTemplate.send(SEANCE_RESERVE, jsonEvent);
+    }
+
+    public void sendReservationCancel(String cancelReservation ) throws JsonProcessingException {
+        String jsonEvent = objectMapper.writeValueAsString(cancelReservation);
+        kafkaTemplate.send(CANCEL_RESERVATION, jsonEvent);
     }
 
 }
