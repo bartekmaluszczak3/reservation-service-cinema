@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CountDownLatch;
 
-import static com.example.reservation.service.cinema.service.kafka.TopicsNames.RESERVATION_STATE_CHANGED;
-import static com.example.reservation.service.cinema.service.kafka.TopicsNames.SEANCE_RESERVE;
+import static com.example.reservation.service.cinema.service.kafka.TopicsNames.*;
 
 @Component
 public class MockConsumer {
@@ -24,6 +23,12 @@ public class MockConsumer {
 
     @KafkaListener(topics = RESERVATION_STATE_CHANGED)
     public void reservationStateChanged(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
+        payload = consumerRecord.value().toString();
+        latch.countDown();
+    }
+
+    @KafkaListener(topics = RESERVATION_STATE_CHANGE_FAILED)
+    public void reserveStatChangeFailed(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
         payload = consumerRecord.value().toString();
         latch.countDown();
     }

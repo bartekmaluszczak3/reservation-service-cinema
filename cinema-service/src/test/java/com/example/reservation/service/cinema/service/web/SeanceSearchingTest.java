@@ -157,7 +157,6 @@ public class SeanceSearchingTest {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        System.out.println(response);
         return Arrays.asList(mapper.readValue(response, SeanceDto[].class));
     }
 }
