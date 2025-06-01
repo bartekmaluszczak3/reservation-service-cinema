@@ -38,11 +38,9 @@ public class Seance {
 
     public Set<String> getReservedSeats(){
         Set<String> reservedSeat = new HashSet<>();
-        reservationList.forEach(e-> reservedSeat.addAll(e.getReservedSeats()));
+        reservationList.stream()
+                .filter(e-> e.getReservationStatus().equals(ReservationStatus.ACTIVE))
+                .forEach(e-> reservedSeat.addAll(e.getReservedSeats()));
         return reservedSeat;
-    }
-
-    public boolean reserveSeat(String seat) {
-        return true;
     }
 }

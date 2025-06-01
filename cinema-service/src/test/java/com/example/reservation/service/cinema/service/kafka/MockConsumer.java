@@ -18,21 +18,21 @@ public class MockConsumer {
     private final HashMap<Integer, String> reservationStateChangedFailedEvents = new HashMap<>();
 
     @KafkaListener(topics = SEANCE_RESERVE, groupId = GROUP_ID)
-    public void seanceReserved(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
+    public void seanceReserved(ConsumerRecord<?, ?> consumerRecord) {
         String payload = consumerRecord.value().toString();
         int size = seanceReserveEvents.size() + 1;
         seanceReserveEvents.put(size, payload);
     }
 
     @KafkaListener(topics = RESERVATION_STATE_CHANGED, groupId = GROUP_ID)
-    public void reservationStateChanged(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
+    public void reservationStateChanged(ConsumerRecord<?, ?> consumerRecord){
         String payload = consumerRecord.value().toString();
         int size = reservationStateChangedEvents.size() + 1;
         reservationStateChangedEvents.put(size, payload);
     }
 
     @KafkaListener(topics = RESERVATION_STATE_CHANGE_FAILED, groupId = GROUP_ID)
-    public void reserveStatChangeFailed(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
+    public void reserveStatChangeFailed(ConsumerRecord<?, ?> consumerRecord) {
         String payload = consumerRecord.value().toString();
         int size = reservationStateChangedFailedEvents.size() + 1;
         reservationStateChangedFailedEvents.put(size, payload);
