@@ -50,6 +50,9 @@ public class ConsumerService {
                     ReservationStateChangedData.builder()
                             .reservationUid(reservationUid)
                             .oldStatus(null)
+                            .seanceUid(reserveSeatData.getSeanceUid())
+                            .userUid(reserveSeatData.getUserUid())
+                            .reservedSeat(reserveSeatData.getReservedSeat())
                             .newStatus(ReservationStatus.ACTIVE.name())
                             .build()
             );
