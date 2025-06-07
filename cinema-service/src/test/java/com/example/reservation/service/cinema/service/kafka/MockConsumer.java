@@ -5,40 +5,72 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.HashMap;
 
 import static com.example.reservation.service.cinema.service.kafka.TopicsNames.*;
 
 @Component
 public class MockConsumer {
 
-    private CountDownLatch latch = new CountDownLatch(1);
-    private String payload = null;
+    private final String GROUP_ID = "MOCK_ID";
+    private final HashMap<Integer, String> seanceReserveEvents = new HashMap<>();
+    private final HashMap<Integer, String> reservationStateChangedEvents = new HashMap<>();
+    private final HashMap<Integer, String> reservationStateChangedFailedEvents = new HashMap<>();
 
-    @KafkaListener(topics = SEANCE_RESERVE)
+    @KafkaListener(topics = SEANCE_RESERVE, groupId = GROUP_ID)
     public void seanceReserved(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
-        payload = consumerRecord.value().toString();
-        latch.countDown();
+        String payload = consumerRecord.value().toString();
+        int size = seanceReserveEvents.size() + 1;
+        seanceReserveEvents.put(size, payload);
     }
 
-    @KafkaListener(topics = RESERVATION_STATE_CHANGED)
+    @KafkaListener(topics = RESERVATION_STATE_CHANGED, groupId = GROUP_ID)
     public void reservationStateChanged(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
-        payload = consumerRecord.value().toString();
-        latch.countDown();
+        String payload = consumerRecord.value().toString();
+        int size = reservationStateChangedEvents.size() + 1;
+        reservationStateChangedEvents.put(size, payload);
     }
 
-    @KafkaListener(topics = RESERVATION_STATE_CHANGE_FAILED)
+    @KafkaListener(topics = RESERVATION_STATE_CHANGE_FAILED, groupId = GROUP_ID)
     public void reserveStatChangeFailed(ConsumerRecord<?, ?> consumerRecord) throws JsonProcessingException {
-        payload = consumerRecord.value().toString();
-        latch.countDown();
+        String payload = consumerRecord.value().toString();
+        int size = reservationStateChangedFailedEvents.size() + 1;
+        reservationStateChangedFailedEvents.put(size, payload);
     }
 
-    public String  getPayload(){
-        return payload;
+    public int countSeanceReservedEvents(){
+        return seanceReserveEvents.size();
     }
 
-    public void resetPayload(){
-        payload = null;
+    public int countReservationStateChangedEvents(){
+        return reservationStateChangedEvents.size();
     }
 
+    public int countReservationStateChangedFailedEvents(){
+        return reservationStateChangedFailedEvents.size();
+    }
+
+    public String getLatestPayloadOfReserveEvent(){
+        return seanceReserveEvents.get(seanceReserveEvents.size());
+    }
+
+    public String getLatestPayloadOfReservationStateChangedEvents(){
+        return reservationStateChangedEvents.get(reservationStateChangedEvents.size());
+    }
+
+    public String getLatestPayloadOfReservationStateChangedFailedEvents(){
+        return reservationStateChangedFailedEvents.get(reservationStateChangedFailedEvents.size());
+    }
+
+    public void resetSeanceReservedEvents(){
+        this.seanceReserveEvents.clear();
+    }
+
+    public void resetReservationStateChangedEvents(){
+        this.reservationStateChangedEvents.clear();
+    }
+
+    public void resetReservationStateChangedFailedEvents(){
+        this.reservationStateChangedFailedEvents.clear();
+    }
 }

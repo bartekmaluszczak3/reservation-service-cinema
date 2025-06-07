@@ -4,8 +4,6 @@ import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
 import lombok.SneakyThrows;
 import org.example.events.events.Event;
-import org.example.events.events.eventdata.EventData;
-import org.example.events.events.eventdata.ReserveSeatData;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,10 +14,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
@@ -51,23 +46,19 @@ public class SeanceReserveFailedTest {
         container.clearDatabase();
     }
 
+    @AfterEach
+    void afterEach(){
+        mockConsumer.resetReservationStateChangedFailedEvents();
+    }
+
     @SneakyThrows
     @Test
     void shouldSendFailedEventWhenSeanceUidIsNotFound(){
         // given
         String seanceUid = "invalid-uid";
         List<String> reservedSeat = List.of("112", "113");
-        EventData eventData = ReserveSeatData.builder()
-                .seanceUid(seanceUid)
-                .reservedSeat(reservedSeat)
-                .build();
 
-        Event event = Event.builder()
-                .id(UUID.randomUUID().toString())
-                .eventType("ReserveSeatEvent")
-                .timestamp(Date.from(Instant.now()))
-                .eventData(eventData)
-                .build();
+        Event event = EventBuilder.buildReserveSeatsEvent(seanceUid, reservedSeat);
 
         // when
         String eventString = new ObjectMapper().writeValueAsString(event);
@@ -76,9 +67,9 @@ public class SeanceReserveFailedTest {
         // then
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> mockConsumer.getPayload() != null);
-        String payload = mockConsumer.getPayload();
-        Assertions.assertTrue(payload.contains("ReserveSeatFailedEvent"));
+                .until(() -> mockConsumer.countReservationStateChangedFailedEvents() == 1);
+        String payload = mockConsumer.getLatestPayloadOfReservationStateChangedFailedEvents();
+        Assertions.assertTrue(payload.contains("ReserveStateChangeFailedEvent"));
         Assertions.assertTrue(payload.contains(seanceUid));
         Assertions.assertTrue(payload.contains(String.format("Seance with uid %s not found", seanceUid)));
     }
@@ -86,10 +77,9 @@ public class SeanceReserveFailedTest {
     @SneakyThrows
     @Test
     void shouldSendFailedEventWhenSeatsAreCurrentlyReserved(){
-        String seanceUid = "seance-id1";
+        String seanceUid = "seance-id3";
         List<String> reservedSeat = List.of("das", "13","1");
-        Event event = EventBuilder.buildEvent("ReserveSeatEvent", seanceUid, reservedSeat);
-
+        Event event = EventBuilder.buildReserveSeatsEvent(seanceUid, reservedSeat);
 
         // when
         String eventString = new ObjectMapper().writeValueAsString(event);
@@ -98,9 +88,9 @@ public class SeanceReserveFailedTest {
         // then
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> mockConsumer.getPayload() != null);
-        String payload = mockConsumer.getPayload();
-        Assertions.assertTrue(payload.contains("ReserveSeatFailedEvent"));
+                .until(() -> mockConsumer.countReservationStateChangedFailedEvents() == 1);
+        String payload = mockConsumer.getLatestPayloadOfReservationStateChangedFailedEvents();
+        Assertions.assertTrue(payload.contains("ReserveStateChangeFailedEvent"));
         Assertions.assertTrue(payload.contains(seanceUid));
         Assertions.assertTrue(payload.contains("These seats are currently taken"));
     }

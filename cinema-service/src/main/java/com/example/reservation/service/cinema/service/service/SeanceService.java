@@ -70,7 +70,7 @@ public class SeanceService {
             return reservationService.createReservation(new ReservationService.CreateReservationParams(userUid, reservedSeats, seance));
         }else {
             log.error("Cannot reserve seat. One of seats is currently taken");
-            throw new ReserveSeatsFailedException("This seat is currently taken");
+            throw new ReserveSeatsFailedException("These seats are currently taken");
         }
     }
 

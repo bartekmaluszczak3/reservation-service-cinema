@@ -4,8 +4,6 @@ import com.example.reservation.service.cinema.service.Application;
 import com.example.reservation.service.cinema.service.utils.PostgresContainer;
 import lombok.SneakyThrows;
 import org.example.events.events.Event;
-import org.example.events.events.eventdata.EventData;
-import org.example.events.events.eventdata.ReserveSeatData;
 import org.junit.jupiter.api.*;
 import org.postgresql.jdbc.PgArray;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,6 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
@@ -51,9 +48,9 @@ public class SeanceReserveTest {
         container.clearDatabase();
     }
 
-    @AfterEach
-    void afterEach(){
-        mockConsumer.resetPayload();
+    @BeforeEach
+    void beforeEach(){
+        mockConsumer.resetReservationStateChangedEvents();
     }
 
     @SneakyThrows
@@ -62,18 +59,8 @@ public class SeanceReserveTest {
         // given
         String seanceUid = "seance-id2";
         List<String> reservedSeat = List.of("112", "113");
-        EventData eventData = ReserveSeatData.builder()
-                .seanceUid(seanceUid)
-                .userUid("userUid")
-                .reservedSeat(reservedSeat)
-                .build();
+        Event event = EventBuilder.buildReserveSeatsEvent(seanceUid, reservedSeat);
 
-        Event event = Event.builder()
-                .id(UUID.randomUUID().toString())
-                .eventType("ReserveSeatEvent")
-                .timestamp(Date.from(Instant.now()))
-                .eventData(eventData)
-                .build();
 
         // when
         String eventString = new ObjectMapper().writeValueAsString(event);
@@ -82,9 +69,9 @@ public class SeanceReserveTest {
         // then
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> mockConsumer.getPayload() != null);
+                .until(() -> mockConsumer.countReservationStateChangedEvents() == 1);
 
-        String payload = mockConsumer.getPayload();
+        String payload = mockConsumer.getLatestPayloadOfReservationStateChangedEvents();
         JsonNode reservationData = new ObjectMapper().readTree(payload).get("eventData");
         Assertions.assertEquals("ACTIVE", (reservationData.get("newStatus").asText()));
         String reservationUid = reservationData.get("reservationUid").asText();
@@ -103,19 +90,8 @@ public class SeanceReserveTest {
         // given
         String seanceUid = "seance-id3";
         List<String> reservedSeat = List.of("das", "13","1");
+        Event event = EventBuilder.buildReserveSeatsEvent(seanceUid, reservedSeat);
 
-        EventData eventData = ReserveSeatData.builder()
-                .userUid("userUid")
-                .seanceUid(seanceUid)
-                .reservedSeat(reservedSeat)
-                .build();
-
-        Event event = Event.builder()
-                .id(UUID.randomUUID().toString())
-                .eventType("ReserveSeatEvent")
-                .timestamp(Date.from(Instant.now()))
-                .eventData(eventData)
-                .build();
         // when
         String eventString = new ObjectMapper().writeValueAsString(event);
         mockProducer.sendSeanceReserved(eventString);
@@ -125,8 +101,8 @@ public class SeanceReserveTest {
         Assertions.assertFalse(reservedSeatsInSeance.containsAll(reservedSeat));
 
         // and
-        String payload = mockConsumer.getPayload();
-        Assertions.assertNull(payload);
+        int stateChangedEvents = mockConsumer.countReservationStateChangedEvents();
+        Assertions.assertEquals(0, stateChangedEvents);
     }
 
     private Map<String, Object> getReservation(String reservationUid){
