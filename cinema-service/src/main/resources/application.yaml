@@ -17,3 +17,10 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+application:
+  security:
+    jwt:
+      secret-key: 2ADDFD5C436226A765CHSADFDAS33212332138A3BE26A
+      expiration: 86400000 # a day
+      refresh-token:
+        expiration: 604800000 # 7 days
