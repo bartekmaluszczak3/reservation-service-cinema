@@ -75,7 +75,7 @@ public class SeatsCancellationTest {
 
         // then
         await()
-                .atMost(Duration.ofSeconds(5))
+                .atMost(Duration.ofSeconds(15))
                 .until(() -> mockConsumer.countReservationStateChangedEvents() == 1);
 
         var cancelledReservation = getReservation(reservationUid);

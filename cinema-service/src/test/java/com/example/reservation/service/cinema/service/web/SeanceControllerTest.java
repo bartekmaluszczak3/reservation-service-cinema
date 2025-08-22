@@ -19,7 +19,8 @@ import java.util.List;
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestPropertySource(properties = {"service.crypto.disabled=true"})
+@TestPropertySource(properties = {
+         "service.crypto.disabled=true"})
 public class SeanceControllerTest {
     @Autowired
     TestRestTemplate testRestTemplate;

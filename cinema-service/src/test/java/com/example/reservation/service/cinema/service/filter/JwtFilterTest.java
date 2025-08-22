@@ -25,8 +25,8 @@ import java.io.IOException;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {
         "service.authservice.client.url=http://localhost:8080",
-        "service.authservice.client.isSecure=true",
-        "service.authservice.client.timeout=2s"
+        "service.authservice.client.timeout=2s",
+        "service.jwt.enabled=true"
 })
 public class JwtFilterTest {
 
@@ -89,12 +89,30 @@ public class JwtFilterTest {
 
     @Test
     void shouldNotReturnOkWhenUserHasInvalidJwt(){
+        // given
+        String jwt = "invalid-jwt";
 
+        // when
+        ResponseEntity<String> result = sendRequest(jwt);
+
+        // then
+        Assertions.assertFalse(result.getStatusCode().is2xxSuccessful());
+    }
+
+    @Test
+    void shouldNotReturnOkWhenUserDoesNotHaveJwt(){
+        // when
+        ResponseEntity<String> result = sendRequest(null);
+
+        // then
+        Assertions.assertFalse(result.getStatusCode().is2xxSuccessful());
     }
 
     private ResponseEntity<String> sendRequest(String jwt){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer "+ jwt);
+        if(jwt != null){
+            headers.set("Authorization", "Bearer "+ jwt);
+        }
         HttpEntity<String> entity = new HttpEntity<>(headers);
         String url = "/api/v1/seance/reserved/seance-id1";
         return testRestTemplate.exchange(url, HttpMethod.GET, entity, String.class);

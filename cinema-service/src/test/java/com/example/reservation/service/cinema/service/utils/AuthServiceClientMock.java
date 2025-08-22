@@ -17,7 +17,7 @@ public class AuthServiceClientMock {
 
     public AuthServiceClientMock(AuthClientConfiguration authClientConfiguration){
         this.baseUrl = authClientConfiguration.getUrl();
-        this.server =new WireMockServer(new WireMockConfiguration().port(8080)
+        this.server = new WireMockServer(new WireMockConfiguration().port(8080)
                 .timeout(authClientConfiguration.getTimeout().toMillisPart()));
     }
 
@@ -30,7 +30,7 @@ public class AuthServiceClientMock {
                 .id(1)
                 .build();
         String serializedUser = new ObjectMapper().writeValueAsString(user);
-        server.stubFor(post(urlEqualTo("/api/v1/auth/getInfo?email=" + email))
+        server.stubFor(get(urlEqualTo("/api/v1/auth/getInfo?email=" + email))
                 .willReturn(aResponse().withBody(serializedUser)));
 
     }

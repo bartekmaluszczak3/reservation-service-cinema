@@ -21,9 +21,6 @@ public class SecurityConfiguration {
     @Value("${service.authservice.client.url:default}")
     private String url;
 
-    @Value("${service.authservice.client.isSecure:false}")
-    private boolean isSecure;
-
     @Value("${service.authservice.client.timeout:1ms}")
     private Duration timeout;
 
@@ -34,7 +31,7 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthClientConfiguration authClientConfiguration(){
-        return new AuthClientConfiguration(url, isSecure, timeout);
+        return new AuthClientConfiguration(url, timeout);
     }
 
     @Bean

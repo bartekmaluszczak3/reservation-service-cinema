@@ -34,11 +34,6 @@ public class SeanceServiceTest {
         container.initRecords();
     }
 
-    @AfterEach
-    void afterEach(){
-        container.execute("delete from reservation;");
-    }
-
     @AfterAll
     void afterAll() throws IOException {
         container.clearRecords();
@@ -50,7 +45,7 @@ public class SeanceServiceTest {
     void shouldReserveSeatsWhenTheyAreFree(){
         // given
         String seanceUid = "seance-id5";
-        String userUid = "dummy";
+        String userUid = "user-uid";
         List<String> seats = List.of("1", "2");
 
         // when
@@ -71,7 +66,7 @@ public class SeanceServiceTest {
     void shouldNotReserveSeatsIfAreTaken() throws EncryptFailed, SeanceNotFoundException {
         // given
         String seanceUid = "seance-id3";
-        String userUid = "dummy";
+        String userUid = "user-uid";
         List<String> seats = List.of("1", "12", "123");
 
         // when and then

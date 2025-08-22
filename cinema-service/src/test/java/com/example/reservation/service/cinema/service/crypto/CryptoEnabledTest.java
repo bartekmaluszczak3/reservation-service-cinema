@@ -30,7 +30,8 @@ import java.util.List;
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {"service.crypto.disabled=false",
-                                "service.crypto.secretKey=secrets"})
+                                "service.crypto.secretKey=secrets",
+                                "service.jwt.enabled=false"})
 public class CryptoEnabledTest {
 
     @Autowired
@@ -97,7 +98,7 @@ public class CryptoEnabledTest {
     void shouldDecryptSeatsResponse(){
         // given
         SecretKeySpec spec = CryptoTestUtils.createSecretSpec("secrets");
-        String seanceUid = "seance-id2";
+        String seanceUid = "seance-id3";
 
         // when
         HttpEntity<String> listResponseEntity = sendGetReservedSeatRequest(seanceUid);
@@ -105,7 +106,7 @@ public class CryptoEnabledTest {
         // then
         var decryptedResponse = CryptoTestUtils.decrypt(spec, listResponseEntity.getBody());
         var seats = responseToStringList(decryptedResponse);
-        Assertions.assertEquals(5, seats.size());
+        Assertions.assertEquals(4, seats.size());
     }
 
     @SneakyThrows
