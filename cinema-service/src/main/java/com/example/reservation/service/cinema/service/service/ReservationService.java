@@ -1,5 +1,6 @@
 package com.example.reservation.service.cinema.service.service;
 
+import com.example.reservation.service.cinema.domain.dto.ReservationDto;
 import com.example.reservation.service.cinema.domain.model.Reservation;
 import com.example.reservation.service.cinema.domain.model.ReservationStatus;
 import com.example.reservation.service.cinema.domain.model.Seance;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -61,6 +63,16 @@ public class ReservationService {
         reservation.setReservationStatus(ReservationStatus.CANCELLED);
         reservation.setModifiedTime(LocalDateTime.now());
         reservationRepository.saveAndFlush(reservation);
+    }
+
+    public List<ReservationDto> getReservations(String userUid){
+        if(userUid == null){
+            return List.of();
+        }
+        var reservationList = reservationRepository.findByUserUuid(userUid);
+        return reservationList.stream()
+                .map(ReservationDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     public record CreateReservationParams(String userUid, List<String> reservedSeats, Seance seanceUid) {

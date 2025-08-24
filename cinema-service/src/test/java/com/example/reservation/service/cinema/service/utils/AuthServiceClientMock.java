@@ -22,9 +22,9 @@ public class AuthServiceClientMock {
     }
 
     @SneakyThrows
-    public void stubResponse(String email){
+    public void stubResponse(String email, String userUid){
         User user = User.builder()
-                .userUid("userUid")
+                .userUid(userUid)
                 .password("password")
                 .email(email)
                 .id(1)

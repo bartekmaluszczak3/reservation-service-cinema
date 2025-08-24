@@ -60,7 +60,7 @@ public class JwtFilterTest {
     void shouldReturnOkWhenUserHasValidJwtToken(){
         // given
         String email = "email";
-        authServiceClientMock.stubResponse(email);
+        authServiceClientMock.stubResponse(email, "userUid");
         User user = User.builder()
                 .email(email)
                 .userUid("userUid")
