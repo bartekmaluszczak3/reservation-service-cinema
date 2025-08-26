@@ -15,12 +15,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class)
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {
@@ -28,6 +29,7 @@ import java.io.IOException;
         "service.authservice.client.timeout=2s",
         "service.jwt.enabled=true"
 })
+@DirtiesContext
 public class JwtFilterTest {
 
     private static final PostgresContainer container = new PostgresContainer();
@@ -54,6 +56,7 @@ public class JwtFilterTest {
     void afterAll() throws IOException {
         container.clearRecords();
         container.clearDatabase();
+        authServiceClientMock.stop();
     }
 
     @Test

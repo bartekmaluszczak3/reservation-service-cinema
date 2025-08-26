@@ -27,7 +27,7 @@ public class PostgresContainer implements ApplicationContextInitializer<Configur
         container = new PostgreSQLContainer(dockerImageName)
                 .withDatabaseName("jwt-service")
                 .withUsername("postgres")
-                .withUsername("admin");
+                .withPassword("admin");
         container.start();
         dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(container.getJdbcUrl());

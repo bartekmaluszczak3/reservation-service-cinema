@@ -16,15 +16,17 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.util.List;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class)
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext
 @TestPropertySource(properties = {
         "service.crypto.disabled=true",
         "service.jwt.enabled=true",

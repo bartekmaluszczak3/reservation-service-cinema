@@ -25,7 +25,7 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ContextConfiguration(initializers = PostgresContainer.class)
 @DirtiesContext
-@EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
+@EmbeddedKafka(partitions = 1)
 public class SeanceReserveTest {
 
     private static final PostgresContainer container = new PostgresContainer();

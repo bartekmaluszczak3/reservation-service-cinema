@@ -30,7 +30,7 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestPropertySource(properties = {"service.crypto.disabled=true"})
 @DirtiesContext
-@EmbeddedKafka(partitions = 1, brokerProperties = { "listeners=PLAINTEXT://localhost:9092", "port=9092" })
+@EmbeddedKafka(partitions = 1, controlledShutdown = false)
 public class SeatsCancellationTest {
     private static final PostgresContainer container = new PostgresContainer();
 

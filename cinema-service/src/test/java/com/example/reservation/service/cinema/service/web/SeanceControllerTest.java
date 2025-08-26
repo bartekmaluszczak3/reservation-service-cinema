@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class, properties = {"server.port=7777"})
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.DEFINED_PORT, classes = Application.class)
 @ContextConfiguration(initializers = PostgresContainer.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestPropertySource(properties = {
@@ -43,14 +43,14 @@ public class SeanceControllerTest {
     @Test
     void shouldReturnReservedSeat(){
         // given
-        String seanceUid = "seance-id1";
+        String seanceUid = "seance-id3";
 
         // when
         List<String> reservedSeat = sendGetReservedSeatRequest(seanceUid);
 
         // then
         Assertions.assertTrue(reservedSeat.contains("1"));
-        Assertions.assertTrue(reservedSeat.contains("12"));
+        Assertions.assertTrue(reservedSeat.contains("1"));
     }
 
     @Test

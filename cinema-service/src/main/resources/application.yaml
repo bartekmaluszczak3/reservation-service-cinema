@@ -11,10 +11,10 @@ spring:
     consumer:
       auto-offset-reset: earliest
       group-id: reservation-service
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
     producer:
       useNativeEncoding: true
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:9092}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 application:
@@ -24,3 +24,9 @@ application:
       expiration: 86400000 # a day
       refresh-token:
         expiration: 604800000 # 7 days
+logging:
+  level:
+    org.apache.kafka: ERROR
+    org.apache.kafka.clients: ERROR
+    org.springframework.kafka: ERROR
+    kafka: ERROR
