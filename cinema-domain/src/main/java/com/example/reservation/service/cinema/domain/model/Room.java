@@ -22,4 +22,8 @@ public class Room {
     private String name;
 
     private int capacity;
+
+    @ManyToOne
+    @JoinColumn(name = "cinema_uid", referencedColumnName ="uuid")
+    private Cinema cinema;
 }

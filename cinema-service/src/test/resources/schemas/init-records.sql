@@ -1,4 +1,5 @@
 -- persistence test
+insert into cinema(id, uuid, city, street, cinema_chain) values (1, 'cinema-uid1', 'Krakow', 'Piotrkowska 23', 'MULTIKINO');
 insert into room(id, uuid, name, capacity) values (1, 'room-id-1', 'room-one', 250);
 insert into room(id, uuid, name, capacity) values (2, 'room-id-2', 'room-two', 30);
 

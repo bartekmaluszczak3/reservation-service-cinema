@@ -1,8 +1,22 @@
+create table cinema(
+   id bigint PRIMARY KEY,
+   uuid VARCHAR(255) unique not null,
+   city VARCHAR(255) not null,
+   street VARCHAR(255) not null,
+   cinema_chain VARCHAR(255) not null
+);
+
+create sequence cinema_seq increment 1 start 1;
+
 create table room (
     id bigint PRIMARY KEY,
     uuid VARCHAR(255) unique not null,
     name VARCHAR(255) UNIQUE NOT NULL,
-    capacity integer NOT NULL
+    capacity integer NOT NULL,
+    cinema_uid VARCHAR(255),
+      CONSTRAINT fk_cinema
+       FOREIGN KEY("cinema_uid")
+        REFERENCES cinema("uuid")
 );
 
 create sequence room_seq increment 1 start 1;
